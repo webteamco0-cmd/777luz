@@ -178,6 +178,85 @@ const detailScenes = [
     },
 ] as const;
 
+const heroSlides = [
+    {
+        src: '/assets/images/hero/reception-primary.jpg',
+        altAr: 'استقبال سفن لوز للشقق المخدومة',
+        altEn: 'Seven Luz serviced apartments reception',
+        ar: {
+            eyebrow: 'من أول لحظة تبدأ الضيافة',
+            lineOne: 'إقامة أهدأ',
+            lineTwo: 'بتفاصيل أرقى',
+            description:
+                'في سفن لوز تبدأ راحتك من لحظة الوصول بمساحات مخدومة وخدمة واضحة وخصوصية تمنحك إحساسًا مختلفًا بالإقامة',
+        },
+        en: {
+            eyebrow: 'Hospitality from the first moment',
+            lineOne: 'A calmer stay',
+            lineTwo: 'in every detail',
+            description:
+                'At Seven Luz comfort begins the moment you arrive with serviced spaces thoughtful hospitality and the privacy to settle in your own way',
+        },
+    },
+    {
+        src: '/assets/images/hero/lounge-primary.jpg',
+        altAr: 'صالة أنيقة داخل سفن لوز',
+        altEn: 'Elegant lounge inside Seven Luz',
+        ar: {
+            eyebrow: 'مساحات صممت للراحة',
+            lineOne: 'هدوء يليق',
+            lineTwo: 'بوقتك',
+            description:
+                'تصميم هادئ وإضاءة دافئة وتفاصيل مدروسة تصنع مساحة مريحة للجلوس والعمل والاسترخاء طوال فترة إقامتك',
+        },
+        en: {
+            eyebrow: 'Spaces designed for comfort',
+            lineOne: 'Calm that fits',
+            lineTwo: 'your pace',
+            description:
+                'Warm light quiet interiors and considered details create an effortless space to relax work and enjoy every part of your stay',
+        },
+    },
+    {
+        src: '/assets/images/hero/lounge-depth.jpg',
+        altAr: 'جلسة مريحة في سفن لوز',
+        altEn: 'Comfortable living space at Seven Luz',
+        ar: {
+            eyebrow: 'راحة تشبه البيت',
+            lineOne: 'خصوصية أكثر',
+            lineTwo: 'وإقامة أسهل',
+            description:
+                'كل مساحة مصممة لتمنحك حرية أكبر وراحة يومية حقيقية سواء كانت زيارتك قصيرة أو إقامتك تمتد لوقت أطول',
+        },
+        en: {
+            eyebrow: 'Comfort that feels familiar',
+            lineOne: 'More privacy',
+            lineTwo: 'an easier stay',
+            description:
+                'Each space is shaped for everyday comfort and freedom whether you are visiting for a few nights or staying a little longer',
+        },
+    },
+    {
+        src: '/assets/images/hero/arrival-exterior.jpg',
+        altAr: 'تفاصيل من سفن لوز في حي المصيف بالرياض',
+        altEn: 'Seven Luz details in Al Masif Riyadh',
+        ar: {
+            eyebrow: 'المصيف · الرياض',
+            lineOne: 'قريب من يومك',
+            lineTwo: 'بعيد عن الضوضاء',
+            description:
+                'موقع في حي المصيف يضعك بالقرب من احتياجاتك اليومية مع أجواء هادئة وتجربة إقامة عملية ومريحة داخل الرياض',
+        },
+        en: {
+            eyebrow: 'Al Masif · Riyadh',
+            lineOne: 'Close to your day',
+            lineTwo: 'away from the noise',
+            description:
+                'A calm base in Al Masif that keeps everyday Riyadh within easy reach while giving you a more relaxed place to return to',
+        },
+    },
+] as const;
+
 const content = {
     ar: {
         nav: {
@@ -823,6 +902,8 @@ export default function Welcome() {
     const [logoEngaged, setLogoEngaged] = useState(false);
     const [mobileBookingOpen, setMobileBookingOpen] = useState(false);
     const [detailIndex, setDetailIndex] = useState(0);
+    const [heroIndex, setHeroIndex] = useState(0);
+    const [heroPaused, setHeroPaused] = useState(false);
 
     const [checkIn, setCheckIn] = useState<Date | null>(null);
     const [checkOut, setCheckOut] = useState<Date | null>(null);
@@ -883,6 +964,8 @@ export default function Welcome() {
 
     const isRtl = language === 'ar';
     const t = content[language];
+    const activeHeroSlide = heroSlides[heroIndex];
+    const activeHeroCopy = activeHeroSlide[language];
 
     const today = useMemo(
         () => normaliseDate(new Date()),
@@ -937,6 +1020,22 @@ export default function Welcome() {
 
         window.localStorage.setItem('seven-luz-theme', theme);
     }, [theme]);
+
+    useEffect(() => {
+        const reducedMotion = window.matchMedia(
+            '(prefers-reduced-motion: reduce)',
+        ).matches;
+
+        if (reducedMotion || heroPaused) {
+            return;
+        }
+
+        const timer = window.setInterval(() => {
+            setHeroIndex((current) => (current + 1) % heroSlides.length);
+        }, 6200);
+
+        return () => window.clearInterval(timer);
+    }, [heroPaused]);
 
     useEffect(() => {
         const root = rootRef.current;
@@ -2274,38 +2373,58 @@ export default function Welcome() {
                     onMouseLeave={handleHeroLeave}
                     className="relative min-h-[100svh] w-full overflow-hidden bg-[#111210]"
                 >
-                    <div className="absolute inset-0 overflow-hidden">
-                        <img
-                            ref={heroImageRef}
-                            src="/assets/images/hero/reception-primary.jpg"
-                            alt={
-                                isRtl
-                                    ? 'استقبال سفن لوز'
-                                    : 'Seven Luz reception'
-                            }
-                            className="sl-image h-full w-full object-cover"
-                            style={{
-                                objectPosition: 'center center',
-                            }}
-                            draggable={false}
-                        />
+                    <div
+                        className="absolute inset-0 overflow-hidden"
+                        onMouseEnter={() => setHeroPaused(true)}
+                        onMouseLeave={() => setHeroPaused(false)}
+                    >
+                        {heroSlides.map((slide, index) => {
+                            const active = index === heroIndex;
 
-                        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,11,10,0.31)_0%,rgba(10,11,10,0.04)_29%,rgba(10,11,10,0.20)_62%,rgba(10,11,10,0.87)_100%)]" />
+                            return (
+                                <div
+                                    key={slide.src}
+                                    className={`sl-hero-frame absolute inset-0 ${active ? 'sl-hero-frame-active z-[2] opacity-100' : 'z-0 opacity-0'}`}
+                                    aria-hidden={!active}
+                                >
+                                    <img
+                                        ref={active ? heroImageRef : undefined}
+                                        src={slide.src}
+                                        alt={language === 'ar' ? slide.altAr : slide.altEn}
+                                        className="sl-image h-full w-full object-cover"
+                                        style={{
+                                            objectPosition:
+                                                index === 1
+                                                    ? 'center 48%'
+                                                    : 'center center',
+                                        }}
+                                        loading={index === 0 ? 'eager' : 'lazy'}
+                                        draggable={false}
+                                    />
+                                </div>
+                            );
+                        })}
+
+                        <div className="absolute inset-0 z-[3] bg-[linear-gradient(180deg,rgba(7,8,7,0.40)_0%,rgba(7,8,7,0.08)_28%,rgba(7,8,7,0.28)_64%,rgba(7,8,7,0.92)_100%)]" />
 
                         <div
-                            className={`absolute inset-0 ${
+                            className={`absolute inset-0 z-[3] ${
                                 isRtl
-                                    ? 'bg-[linear-gradient(270deg,rgba(10,11,10,0.73)_0%,rgba(10,11,10,0.32)_39%,rgba(10,11,10,0.02)_76%)]'
-                                    : 'bg-[linear-gradient(90deg,rgba(10,11,10,0.73)_0%,rgba(10,11,10,0.32)_39%,rgba(10,11,10,0.02)_76%)]'
+                                    ? 'bg-[linear-gradient(270deg,rgba(8,9,8,0.80)_0%,rgba(8,9,8,0.46)_37%,rgba(8,9,8,0.04)_78%)]'
+                                    : 'bg-[linear-gradient(90deg,rgba(8,9,8,0.80)_0%,rgba(8,9,8,0.46)_37%,rgba(8,9,8,0.04)_78%)]'
                             }`}
                         />
 
+                        <div className="sl-hero-vignette pointer-events-none absolute inset-0 z-[4]" />
+
                         <div
                             ref={heroLightRef}
-                            className="pointer-events-none absolute right-[-7%] top-[4%] h-[720px] w-[720px] rounded-full bg-[#d4b36f]/[0.09] blur-[130px]"
+                            className="sl-hero-ambient pointer-events-none absolute right-[-8%] top-[2%] z-[4] h-[760px] w-[760px] rounded-full bg-[#d4b36f]/[0.12] blur-[135px]"
                         />
 
-                        <div className="pointer-events-none absolute bottom-[28%] left-[6%] hidden h-[110px] w-px bg-gradient-to-b from-transparent via-[#d5b572]/30 to-transparent lg:block" />
+                        <div className="sl-hero-sweep pointer-events-none absolute inset-y-0 left-[-35%] z-[5] w-[28%] rotate-[12deg] bg-gradient-to-r from-transparent via-white/[0.07] to-transparent blur-[2px]" />
+
+                        <div className="pointer-events-none absolute bottom-[27%] left-[6%] z-[5] hidden h-[120px] w-px bg-gradient-to-b from-transparent via-[#d5b572]/40 to-transparent lg:block" />
                     </div>
 
                     <header
@@ -2475,76 +2594,121 @@ export default function Welcome() {
 
                     <section
                         id="top"
-                        className="relative z-20 flex min-h-[100svh] flex-col justify-end pb-[112px] pt-28 sm:pb-[120px] lg:pb-[124px]"
+                        className="relative z-20 flex min-h-[100svh] flex-col justify-end pb-[112px] pt-32 sm:pb-[120px] sm:pt-36 lg:pb-[124px]"
                     >
                         <div className="mx-auto w-full max-w-[1450px] px-4 sm:px-6 lg:px-10 xl:px-14">
-                            <div className="max-w-[970px]">
-                            <div
-                                ref={eyebrowRef}
-                                className="mb-5 flex items-center gap-3"
-                            >
-                                <span className="h-px w-9 bg-[#d2b372]" />
-
-                                <span className="sl-overline text-[#dec486]">
-                                    {t.eyebrow}
-                                </span>
-                            </div>
-
-                            <h1 className="sl-display max-w-[920px] text-[clamp(3rem,8vw,8.25rem)] font-medium leading-[1.04] text-white">
-                                <span
-                                    ref={titleOneRef}
-                                    className="block pb-[0.14em] pt-[0.12em] will-change-transform"
+                            <div className="max-w-[1060px]">
+                                <div
+                                    key={`eyebrow-${heroIndex}-${language}`}
+                                    ref={eyebrowRef}
+                                    className="sl-hero-copy-in mb-5 flex items-center gap-3 sm:mb-6"
                                 >
-                                    {t.heroLineOne}
-                                </span>
-
-                                <span
-                                    ref={titleTwoRef}
-                                    className="sl-hero-shimmer block pb-[0.15em] pt-[0.05em] text-[#d8b978] will-change-transform"
-                                >
-                                    {t.heroLineTwo}
-                                </span>
-                            </h1>
-
-                            <div
-                                ref={descriptionRef}
-                                className="mt-3 flex max-w-[780px] flex-col gap-5 sm:mt-4 sm:flex-row sm:items-end sm:justify-between"
-                            >
-                                <p className="sl-copy max-w-[590px] text-[13px] text-white/67 sm:text-[14px] lg:text-[15px]">
-                                    {t.heroDescription}
-                                </p>
-
-                                <a
-                                    ref={discoverRef}
-                                    href="#stay"
-                                    className="group inline-flex w-fit shrink-0 items-center gap-3 text-[11px] font-bold text-white"
-                                >
-                                    <span>{t.discover}</span>
-
-                                    <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/24 bg-white/[0.06] transition-all duration-500 group-hover:-rotate-12 group-hover:border-[#d8b978] group-hover:bg-[#d8b978] group-hover:text-[#171816]">
-                                        <ArrowIcon rtl={isRtl} />
+                                    <span className="h-px w-11 bg-gradient-to-r from-[#d2b372] to-[#f0d99f]/35 sm:w-14" />
+                                    <span className="sl-overline text-[12px] font-semibold tracking-[0.08em] text-[#ead39b] sm:text-[13px] lg:text-[14px]">
+                                        {activeHeroCopy.eyebrow}
                                     </span>
-                                </a>
-                            </div>
+                                </div>
 
-                            <div
-                                ref={chipsRef}
-                                className="mt-6 flex flex-wrap gap-2"
-                            >
-                                {[
-                                    t.directBooking,
-                                    t.reception,
-                                    t.serviced,
-                                ].map((item) => (
+                                <h1
+                                    key={`title-${heroIndex}-${language}`}
+                                    className="sl-display sl-hero-copy-in max-w-[1030px] text-[clamp(3.45rem,7.5vw,8rem)] font-medium leading-[1.02] text-white"
+                                >
                                     <span
-                                        key={item}
-                                        data-chip
-                                        className="rounded-full border border-white/13 bg-black/12 px-3.5 py-2 text-[9px] font-semibold tracking-[0.04em] text-white/62 backdrop-blur-md transition duration-300 hover:border-[#d3b36f]/40 hover:bg-[#d3b36f]/10 hover:text-white"
+                                        ref={titleOneRef}
+                                        className="block pb-[0.12em] pt-[0.08em] will-change-transform"
                                     >
-                                        {item}
+                                        {activeHeroCopy.lineOne}
                                     </span>
-                                ))}
-                            </div>
+
+                                    <span
+                                        ref={titleTwoRef}
+                                        className="sl-hero-shimmer block pb-[0.15em] pt-[0.03em] will-change-transform"
+                                    >
+                                        {activeHeroCopy.lineTwo}
+                                    </span>
+                                </h1>
+
+                                <div
+                                    key={`description-${heroIndex}-${language}`}
+                                    ref={descriptionRef}
+                                    className="sl-hero-copy-in mt-4 flex max-w-[930px] flex-col gap-6 sm:mt-5 sm:flex-row sm:items-end sm:justify-between"
+                                >
+                                    <p className="sl-copy max-w-[690px] text-[17px] font-medium leading-[1.95] text-white/78 sm:text-[18px] lg:text-[20px] lg:leading-[2]">
+                                        {activeHeroCopy.description}
+                                    </p>
+
+                                    <a
+                                        ref={discoverRef}
+                                        href="#stay"
+                                        className="group inline-flex w-fit shrink-0 items-center gap-3 text-[13px] font-bold text-white sm:text-[14px]"
+                                    >
+                                        <span>{t.discover}</span>
+
+                                        <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/28 bg-white/[0.08] shadow-[0_12px_32px_rgba(0,0,0,0.16)] backdrop-blur-xl transition-all duration-500 group-hover:-rotate-12 group-hover:scale-105 group-hover:border-[#e0c58c] group-hover:bg-[#e0c58c] group-hover:text-[#171816]">
+                                            <ArrowIcon rtl={isRtl} />
+                                        </span>
+                                    </a>
+                                </div>
+
+                                <div
+                                    ref={chipsRef}
+                                    className="mt-7 flex flex-wrap items-center gap-2.5 sm:mt-8"
+                                >
+                                    {[t.directBooking, t.reception, t.serviced].map(
+                                        (item) => (
+                                            <span
+                                                key={item}
+                                                data-chip
+                                                className="rounded-full border border-white/15 bg-black/18 px-4 py-2.5 text-[11px] font-semibold tracking-[0.03em] text-white/72 shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-md transition duration-300 hover:border-[#d3b36f]/45 hover:bg-[#d3b36f]/12 hover:text-white sm:text-[12px]"
+                                            >
+                                                {item}
+                                            </span>
+                                        ),
+                                    )}
+                                </div>
+
+                                <div className="mt-8 flex items-center gap-3 sm:mt-9">
+                                    <span className="me-1 text-[10px] font-bold tracking-[0.16em] text-white/42 sm:text-[11px]">
+                                        {String(heroIndex + 1).padStart(2, '0')}
+                                    </span>
+
+                                    <div className="flex items-center gap-2">
+                                        {heroSlides.map((slide, index) => (
+                                            <button
+                                                key={slide.src}
+                                                type="button"
+                                                onClick={() => setHeroIndex(index)}
+                                                aria-label={
+                                                    language === 'ar'
+                                                        ? `عرض الصورة ${index + 1}`
+                                                        : `Show slide ${index + 1}`
+                                                }
+                                                aria-current={
+                                                    heroIndex === index
+                                                        ? 'true'
+                                                        : undefined
+                                                }
+                                                className={`group relative h-3 overflow-hidden rounded-full transition-all duration-500 ${
+                                                    heroIndex === index
+                                                        ? 'w-14 bg-white/16 sm:w-16'
+                                                        : 'w-7 bg-white/10 hover:bg-white/18 sm:w-8'
+                                                }`}
+                                            >
+                                                <span
+                                                    className={`absolute inset-y-0 start-0 rounded-full ${
+                                                        heroIndex === index
+                                                            ? 'sl-hero-progress bg-gradient-to-r from-[#b9965a] via-[#f0d89d] to-[#b9965a]'
+                                                            : 'w-0'
+                                                    }`}
+                                                />
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    <span className="text-[10px] font-bold tracking-[0.16em] text-white/30 sm:text-[11px]">
+                                        {String(heroSlides.length).padStart(2, '0')}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </section>
@@ -4053,7 +4217,125 @@ export default function Welcome() {
                             animation: none !important;
                         }
 
-                        .sl-hero-shimmer {
+                        .sl-hero-frame {
+                        transition:
+                            opacity 1.25s cubic-bezier(.22,.61,.36,1),
+                            transform 7.8s cubic-bezier(.16,1,.3,1);
+                        transform: scale(1.055);
+                        will-change: opacity, transform;
+                    }
+
+                    .sl-hero-frame-active {
+                        transform: scale(1);
+                    }
+
+                    .sl-hero-frame-active .sl-image {
+                        animation: slHeroImageDrift 7.4s ease-out both;
+                    }
+
+                    .sl-hero-copy-in {
+                        animation: slHeroCopyIn .95s cubic-bezier(.16,1,.3,1) both;
+                    }
+
+                    .sl-hero-progress {
+                        width: 100%;
+                        transform-origin: right center;
+                        animation: slHeroProgress 6.2s linear both;
+                    }
+
+                    [dir="ltr"] .sl-hero-progress {
+                        transform-origin: left center;
+                    }
+
+                    .sl-hero-ambient {
+                        animation: slHeroAmbient 7s ease-in-out infinite;
+                    }
+
+                    .sl-hero-sweep {
+                        animation: slHeroSweep 7.8s cubic-bezier(.2,.75,.25,1) infinite;
+                    }
+
+                    .sl-hero-vignette {
+                        box-shadow:
+                            inset 0 0 150px rgba(0, 0, 0, .24),
+                            inset 0 -110px 140px rgba(0, 0, 0, .30);
+                    }
+
+                    @keyframes slHeroImageDrift {
+                        0% {
+                            transform: scale(1.065) translate3d(0, 0, 0);
+                            filter: saturate(.92) brightness(.94);
+                        }
+
+                        100% {
+                            transform: scale(1.015) translate3d(0, -0.6%, 0);
+                            filter: saturate(1) brightness(1);
+                        }
+                    }
+
+                    @keyframes slHeroCopyIn {
+                        0% {
+                            opacity: 0;
+                            transform: translate3d(0, 24px, 0);
+                            filter: blur(8px);
+                        }
+
+                        100% {
+                            opacity: 1;
+                            transform: translate3d(0, 0, 0);
+                            filter: blur(0);
+                        }
+                    }
+
+                    @keyframes slHeroProgress {
+                        from { transform: scaleX(0); }
+                        to { transform: scaleX(1); }
+                    }
+
+                    @keyframes slHeroAmbient {
+                        0%, 100% {
+                            opacity: .58;
+                            transform: translate3d(0, 0, 0) scale(.94);
+                        }
+
+                        50% {
+                            opacity: 1;
+                            transform: translate3d(-4%, 4%, 0) scale(1.08);
+                        }
+                    }
+
+                    @keyframes slHeroSweep {
+                        0%, 20% {
+                            transform: translate3d(-10%, 0, 0) rotate(12deg);
+                            opacity: 0;
+                        }
+
+                        34% {
+                            opacity: .75;
+                        }
+
+                        58%, 100% {
+                            transform: translate3d(520%, 0, 0) rotate(12deg);
+                            opacity: 0;
+                        }
+                    }
+
+                    @media (prefers-reduced-motion: reduce) {
+                        .sl-hero-frame-active .sl-image,
+                        .sl-hero-copy-in,
+                        .sl-hero-progress,
+                        .sl-hero-ambient,
+                        .sl-hero-sweep {
+                            animation: none !important;
+                        }
+
+                        .sl-hero-frame {
+                            transition: opacity .25s ease !important;
+                            transform: none !important;
+                        }
+                    }
+
+                    .sl-hero-shimmer {
                             animation: none;
                             -webkit-text-fill-color: #d8b978;
                             background-image: none;
