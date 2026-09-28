@@ -606,14 +606,14 @@ function CalendarPicker({
             <button
                 type="button"
                 onClick={() => setOpen((current) => !current)}
-                className={`group flex min-h-[58px] w-full items-center gap-3 rounded-[16px] px-4 text-start transition-all duration-300 ${
+                className={`group flex min-h-[66px] w-full items-center gap-3 rounded-[16px] px-4 text-start transition-all duration-300 ${
                     open
                         ? 'bg-[#b9965a]/12 shadow-[inset_0_0_0_1px_rgba(185,150,90,0.42)] dark:bg-[#b9965a]/10'
                         : 'hover:bg-black/[0.055] dark:hover:bg-white/[0.065]'
                 }`}
             >
                 <span
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-all duration-300 ${
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-all duration-300 ${
                         open
                             ? 'border-[#b9965a] bg-[#b9965a] text-[#181915]'
                             : 'border-black/10 text-[#9a7845] group-hover:border-[#b9965a] group-hover:bg-[#b9965a] group-hover:text-[#181915] dark:border-white/12 dark:text-[#d2b372]'
@@ -623,7 +623,7 @@ function CalendarPicker({
                 </span>
 
                 <span className="min-w-0 flex-1">
-                    <span className="mb-0.5 block text-[8px] font-semibold text-black/42 dark:text-white/38">
+                    <span className="mb-1 block text-[10px] font-semibold text-black/48 dark:text-white/44">
                         {label}
                     </span>
 
@@ -783,14 +783,14 @@ function GuestPicker({
             <button
                 type="button"
                 onClick={() => setOpen((current) => !current)}
-                className={`group flex min-h-[58px] w-full items-center gap-3 rounded-[16px] px-4 text-start transition-all duration-300 ${
+                className={`group flex min-h-[66px] w-full items-center gap-3 rounded-[16px] px-4 text-start transition-all duration-300 ${
                     open
                         ? 'bg-[#b9965a]/12 shadow-[inset_0_0_0_1px_rgba(185,150,90,0.42)] dark:bg-[#b9965a]/10'
                         : 'hover:bg-black/[0.055] dark:hover:bg-white/[0.065]'
                 }`}
             >
                 <span
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-all duration-300 ${
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-all duration-300 ${
                         open
                             ? 'border-[#b9965a] bg-[#b9965a] text-[#181915]'
                             : 'border-black/10 text-[#9a7845] group-hover:border-[#b9965a] group-hover:bg-[#b9965a] group-hover:text-[#181915] dark:border-white/12 dark:text-[#d2b372]'
@@ -800,11 +800,11 @@ function GuestPicker({
                 </span>
 
                 <span className="min-w-0 flex-1">
-                    <span className="mb-0.5 block text-[8px] font-semibold text-black/42 dark:text-white/38">
+                    <span className="mb-1 block text-[10px] font-semibold text-black/48 dark:text-white/44">
                         {language === 'ar' ? 'الضيوف' : 'Guests'}
                     </span>
 
-                    <span className="block text-[10px] font-semibold text-[#1c1e1c] dark:text-white/88">
+                    <span className="block text-[13px] font-bold text-[#1c1e1c] dark:text-white/90">
                         {guestLabel}
                     </span>
                 </span>
@@ -899,6 +899,7 @@ export default function Welcome() {
     const [mobileBookingOpen, setMobileBookingOpen] = useState(false);
     const [detailIndex, setDetailIndex] = useState(0);
     const [heroIndex, setHeroIndex] = useState(0);
+    const [heroDirection, setHeroDirection] = useState<1 | -1>(1);
     const [heroPaused, setHeroPaused] = useState(false);
 
     const [checkIn, setCheckIn] = useState<Date | null>(null);
@@ -962,6 +963,18 @@ export default function Welcome() {
     const t = content[language];
     const activeHero = heroSlides[heroIndex];
     const activeHeroCopy = activeHero[language];
+
+    function changeHeroSlide(nextIndex: number, direction: 1 | -1 = 1) {
+        const normalized =
+            (nextIndex + heroSlides.length) % heroSlides.length;
+
+        if (normalized === heroIndex) {
+            return;
+        }
+
+        setHeroDirection(direction);
+        setHeroIndex(normalized);
+    }
 
     const today = useMemo(
         () => normaliseDate(new Date()),
@@ -1027,8 +1040,9 @@ export default function Welcome() {
         }
 
         const interval = window.setInterval(() => {
+            setHeroDirection(1);
             setHeroIndex((current) => (current + 1) % heroSlides.length);
-        }, 5600);
+        }, 6400);
 
         return () => window.clearInterval(interval);
     }, [heroPaused]);
@@ -2381,6 +2395,7 @@ export default function Welcome() {
                                 <div
                                     key={slide.image}
                                     className={`sl-hero-slide absolute inset-0 ${active ? 'sl-hero-slide-active z-[2]' : 'z-0'}`}
+                                    data-direction={heroDirection}
                                     aria-hidden={!active}
                                 >
                                     <img
@@ -2399,17 +2414,18 @@ export default function Welcome() {
                                     />
 
                                     <div className="sl-hero-image-glow pointer-events-none absolute inset-0" />
+                                    <div className="sl-hero-image-shine pointer-events-none absolute inset-0" />
                                 </div>
                             );
                         })}
 
-                        <div className="absolute inset-0 z-[3] bg-[linear-gradient(180deg,rgba(6,7,6,0.42)_0%,rgba(6,7,6,0.08)_26%,rgba(6,7,6,0.22)_58%,rgba(6,7,6,0.90)_100%)]" />
+                        <div className="absolute inset-0 z-[3] bg-[linear-gradient(180deg,rgba(5,6,5,0.46)_0%,rgba(5,6,5,0.06)_27%,rgba(5,6,5,0.24)_59%,rgba(5,6,5,0.94)_100%)]" />
 
                         <div
                             className={`absolute inset-0 z-[3] ${
                                 isRtl
-                                    ? 'bg-[linear-gradient(270deg,rgba(7,8,7,0.84)_0%,rgba(7,8,7,0.47)_36%,rgba(7,8,7,0.08)_73%,rgba(7,8,7,0)_100%)]'
-                                    : 'bg-[linear-gradient(90deg,rgba(7,8,7,0.84)_0%,rgba(7,8,7,0.47)_36%,rgba(7,8,7,0.08)_73%,rgba(7,8,7,0)_100%)]'
+                                    ? 'bg-[linear-gradient(270deg,rgba(5,6,5,0.88)_0%,rgba(5,6,5,0.50)_37%,rgba(5,6,5,0.11)_72%,rgba(5,6,5,0)_100%)]'
+                                    : 'bg-[linear-gradient(90deg,rgba(5,6,5,0.88)_0%,rgba(5,6,5,0.50)_37%,rgba(5,6,5,0.11)_72%,rgba(5,6,5,0)_100%)]'
                             }`}
                         />
 
@@ -2417,12 +2433,12 @@ export default function Welcome() {
 
                         <div
                             ref={heroLightRef}
-                            className="sl-hero-ambient pointer-events-none absolute right-[-9%] top-[2%] z-[4] h-[760px] w-[760px] rounded-full bg-[#d4b36f]/[0.15] blur-[135px]"
+                            className="sl-hero-ambient pointer-events-none absolute right-[-8%] top-[-4%] z-[4] h-[820px] w-[820px] rounded-full bg-[#d4b36f]/[0.18] blur-[145px]"
                         />
 
-                        <div className="sl-hero-sweep pointer-events-none absolute inset-y-[-10%] left-[-42%] z-[5] w-[24%] rotate-[11deg] bg-gradient-to-r from-transparent via-white/[0.14] to-transparent blur-[3px]" />
+                        <div className="sl-hero-sweep pointer-events-none absolute inset-y-[-20%] left-[-48%] z-[5] w-[22%] rotate-[10deg] bg-gradient-to-r from-transparent via-white/[0.20] to-transparent blur-[3px]" />
 
-                        <div className="pointer-events-none absolute bottom-[27%] left-[6%] z-[5] hidden h-[120px] w-px bg-gradient-to-b from-transparent via-[#d5b572]/45 to-transparent lg:block" />
+                        <div className="pointer-events-none absolute bottom-[27%] left-[6%] z-[5] hidden h-[150px] w-px bg-gradient-to-b from-transparent via-[#e5c985]/55 to-transparent lg:block" />
                     </div>
 
                     <header
@@ -2592,36 +2608,36 @@ export default function Welcome() {
 
                     <section
                         id="top"
-                        className="relative z-20 flex min-h-[100svh] flex-col justify-end pb-[116px] pt-32 sm:pb-[124px] sm:pt-36 lg:pb-[130px]"
+                        className="relative z-20 flex min-h-[100svh] flex-col justify-end pb-[132px] pt-32 sm:pb-[142px] sm:pt-36 lg:pb-[150px]"
                     >
                         <div className="mx-auto w-full max-w-[1450px] px-4 sm:px-6 lg:px-10 xl:px-14">
-                            <div className="max-w-[1110px]">
+                            <div className="max-w-[1160px]">
                                 <div
                                     key={`hero-eyebrow-${heroIndex}-${language}`}
                                     ref={eyebrowRef}
                                     className="sl-hero-copy sl-hero-copy-1 mb-5 flex items-center gap-3 sm:mb-6"
                                 >
-                                    <span className="h-px w-11 bg-gradient-to-r from-[#d2b372] via-[#e9ce91] to-transparent sm:w-14" />
+                                    <span className="h-px w-12 bg-gradient-to-r from-[#d2b372] via-[#f0dca8] to-transparent sm:w-16" />
 
-                                    <span className="sl-overline text-[13px] font-semibold tracking-[0.08em] text-[#ead39b] sm:text-[14px] lg:text-[15px]">
+                                    <span className="sl-overline text-[13px] font-semibold tracking-[0.08em] text-[#f0d99f] sm:text-[14px] lg:text-[15px]">
                                         {activeHeroCopy.eyebrow}
                                     </span>
                                 </div>
 
                                 <h1
                                     key={`hero-title-${heroIndex}-${language}`}
-                                    className="sl-display max-w-[1060px] font-medium leading-[1.015] text-white"
+                                    className="sl-display max-w-[1120px] font-medium leading-[0.99] text-white"
                                 >
                                     <span
                                         ref={titleOneRef}
-                                        className="sl-hero-copy sl-hero-copy-2 block pb-[0.10em] pt-[0.06em] text-[clamp(3.6rem,7.7vw,8.6rem)] will-change-transform"
+                                        className="sl-hero-copy sl-hero-copy-2 block pb-[0.11em] pt-[0.06em] text-[clamp(4rem,8.35vw,9.1rem)] tracking-[-0.025em] will-change-transform"
                                     >
                                         {activeHeroCopy.lineOne}
                                     </span>
 
                                     <span
                                         ref={titleTwoRef}
-                                        className="sl-hero-shimmer sl-hero-copy sl-hero-copy-3 block pb-[0.14em] pt-[0.01em] text-[clamp(3.6rem,7.7vw,8.6rem)] will-change-transform"
+                                        className="sl-hero-gold sl-hero-copy sl-hero-copy-3 block pb-[0.15em] pt-[0.01em] text-[clamp(4rem,8.35vw,9.1rem)] tracking-[-0.025em] will-change-transform"
                                     >
                                         {activeHeroCopy.lineTwo}
                                     </span>
@@ -2630,9 +2646,9 @@ export default function Welcome() {
                                 <div
                                     key={`hero-desc-${heroIndex}-${language}`}
                                     ref={descriptionRef}
-                                    className="mt-5 flex max-w-[980px] flex-col gap-7 sm:mt-6 sm:flex-row sm:items-end sm:justify-between"
+                                    className="mt-5 flex max-w-[1040px] flex-col gap-7 sm:mt-6 sm:flex-row sm:items-end sm:justify-between"
                                 >
-                                    <p className="sl-copy sl-hero-copy sl-hero-copy-4 max-w-[700px] text-[18px] font-medium leading-[1.9] text-white/82 sm:text-[19px] lg:text-[21px] lg:leading-[1.95]">
+                                    <p className="sl-copy sl-hero-copy sl-hero-copy-4 max-w-[760px] text-[18px] font-medium leading-[1.9] text-white/84 sm:text-[20px] lg:text-[22px] lg:leading-[1.9]">
                                         {activeHeroCopy.description}
                                     </p>
 
@@ -2643,7 +2659,7 @@ export default function Welcome() {
                                     >
                                         <span>{t.discover}</span>
 
-                                        <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/28 bg-white/[0.08] shadow-[0_14px_34px_rgba(0,0,0,0.16)] backdrop-blur-xl transition-all duration-500 group-hover:-rotate-12 group-hover:scale-105 group-hover:border-[#e2c98f] group-hover:bg-[#e2c98f] group-hover:text-[#171816] sm:h-[52px] sm:w-[52px]">
+                                        <span className="flex h-[52px] w-[52px] items-center justify-center rounded-full border border-white/30 bg-white/[0.08] shadow-[0_16px_38px_rgba(0,0,0,0.18)] backdrop-blur-xl transition-all duration-500 group-hover:-rotate-12 group-hover:scale-110 group-hover:border-[#edd49a] group-hover:bg-[#e6c985] group-hover:text-[#171816]">
                                             <ArrowIcon rtl={isRtl} />
                                         </span>
                                     </a>
@@ -2658,7 +2674,7 @@ export default function Welcome() {
                                             <span
                                                 key={item}
                                                 data-chip
-                                                className="rounded-full border border-white/16 bg-black/20 px-4 py-2.5 text-[11px] font-semibold tracking-[0.04em] text-white/74 shadow-[0_8px_26px_rgba(0,0,0,0.10)] backdrop-blur-md transition duration-300 hover:border-[#d3b36f]/50 hover:bg-[#d3b36f]/12 hover:text-white sm:text-[12px]"
+                                                className="rounded-full border border-white/18 bg-black/20 px-4.5 py-2.5 text-[12px] font-semibold tracking-[0.035em] text-white/78 shadow-[0_9px_28px_rgba(0,0,0,0.12)] backdrop-blur-md transition duration-300 hover:border-[#e0c080]/55 hover:bg-[#d3b36f]/14 hover:text-white"
                                             >
                                                 {item}
                                             </span>
@@ -2667,7 +2683,31 @@ export default function Welcome() {
                                 </div>
 
                                 <div className="mt-8 flex items-center gap-3 sm:mt-9">
-                                    <span className="me-1 text-[10px] font-bold tracking-[0.18em] text-white/48 sm:text-[11px]">
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            changeHeroSlide(
+                                                heroIndex - 1,
+                                                -1,
+                                            )
+                                        }
+                                        aria-label={
+                                            language === 'ar'
+                                                ? 'الصورة السابقة'
+                                                : 'Previous slide'
+                                        }
+                                        className="sl-hero-nav flex h-10 w-10 items-center justify-center rounded-full border border-white/16 bg-black/16 text-white/75 backdrop-blur-md transition hover:border-[#e3c680]/55 hover:bg-[#d3b36f]/15 hover:text-white"
+                                    >
+                                        <ChevronIcon
+                                            direction={
+                                                isRtl
+                                                    ? 'right'
+                                                    : 'left'
+                                            }
+                                        />
+                                    </button>
+
+                                    <span className="text-[11px] font-bold tracking-[0.18em] text-white/55">
                                         {String(heroIndex + 1).padStart(2, '0')}
                                     </span>
 
@@ -2676,7 +2716,14 @@ export default function Welcome() {
                                             <button
                                                 key={slide.image}
                                                 type="button"
-                                                onClick={() => setHeroIndex(index)}
+                                                onClick={() =>
+                                                    changeHeroSlide(
+                                                        index,
+                                                        index > heroIndex
+                                                            ? 1
+                                                            : -1,
+                                                    )
+                                                }
                                                 aria-label={
                                                     language === 'ar'
                                                         ? `عرض الصورة ${index + 1}`
@@ -2687,16 +2734,16 @@ export default function Welcome() {
                                                         ? 'true'
                                                         : undefined
                                                 }
-                                                className={`group relative h-3 overflow-hidden rounded-full transition-all duration-500 ${
+                                                className={`group relative h-[5px] overflow-hidden rounded-full transition-all duration-500 ${
                                                     heroIndex === index
-                                                        ? 'w-16 bg-white/18 sm:w-[72px]'
-                                                        : 'w-8 bg-white/10 hover:bg-white/18'
+                                                        ? 'w-[74px] bg-white/18'
+                                                        : 'w-8 bg-white/10 hover:bg-white/22'
                                                 }`}
                                             >
                                                 <span
                                                     className={`absolute inset-y-0 start-0 rounded-full ${
                                                         heroIndex === index
-                                                            ? 'sl-hero-progress w-full bg-gradient-to-r from-[#a98243] via-[#f4dda7] to-[#b89556]'
+                                                            ? 'sl-hero-progress w-full bg-gradient-to-r from-[#9c7437] via-[#ffe7af] to-[#b89455]'
                                                             : 'w-0'
                                                     }`}
                                                 />
@@ -2704,9 +2751,33 @@ export default function Welcome() {
                                         ))}
                                     </div>
 
-                                    <span className="text-[10px] font-bold tracking-[0.18em] text-white/30 sm:text-[11px]">
+                                    <span className="text-[11px] font-bold tracking-[0.18em] text-white/32">
                                         {String(heroSlides.length).padStart(2, '0')}
                                     </span>
+
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            changeHeroSlide(
+                                                heroIndex + 1,
+                                                1,
+                                            )
+                                        }
+                                        aria-label={
+                                            language === 'ar'
+                                                ? 'الصورة التالية'
+                                                : 'Next slide'
+                                        }
+                                        className="sl-hero-nav flex h-10 w-10 items-center justify-center rounded-full border border-white/16 bg-black/16 text-white/75 backdrop-blur-md transition hover:border-[#e3c680]/55 hover:bg-[#d3b36f]/15 hover:text-white"
+                                    >
+                                        <ChevronIcon
+                                            direction={
+                                                isRtl
+                                                    ? 'left'
+                                                    : 'right'
+                                            }
+                                        />
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -4385,10 +4456,269 @@ export default function Welcome() {
                         }
 
                         .sl-hero-slide {
-                            transform: none !important;
+                        opacity: 0;
+                        clip-path: inset(0 0 0 100%);
+                        transform: translate3d(8%, 0, 0) scale(1.13);
+                        filter: blur(7px) saturate(.82) brightness(.78);
+                        transition:
+                            opacity 1.25s cubic-bezier(.16, 1, .3, 1),
+                            clip-path 1.45s cubic-bezier(.16, 1, .3, 1),
+                            transform 1.65s cubic-bezier(.16, 1, .3, 1),
+                            filter 1.35s ease;
+                        will-change: opacity, clip-path, transform, filter;
+                    }
+
+                    [dir="ltr"] .sl-hero-slide {
+                        clip-path: inset(0 100% 0 0);
+                        transform: translate3d(-8%, 0, 0) scale(1.13);
+                    }
+
+                    .sl-hero-slide-active {
+                        opacity: 1;
+                        clip-path: inset(0 0 0 0);
+                        transform: translate3d(0, 0, 0) scale(1);
+                        filter: blur(0) saturate(1) brightness(1);
+                    }
+
+                    .sl-hero-slide-active img {
+                        animation: slHeroImageDrift 6.4s cubic-bezier(.16, 1, .3, 1) both;
+                    }
+
+                    .sl-hero-image-glow {
+                        background:
+                            radial-gradient(circle at 18% 30%, rgba(255, 226, 157, .23), transparent 26%),
+                            radial-gradient(circle at 82% 18%, rgba(204, 160, 78, .20), transparent 24%),
+                            radial-gradient(circle at 68% 78%, rgba(255, 246, 220, .13), transparent 22%);
+                        mix-blend-mode: screen;
+                        animation: slHeroImageGlow 4.8s ease-in-out infinite;
+                    }
+
+                    .sl-hero-image-shine {
+                        background:
+                            linear-gradient(
+                                116deg,
+                                transparent 0%,
+                                transparent 39%,
+                                rgba(255,255,255,.02) 43%,
+                                rgba(255,238,194,.14) 49%,
+                                rgba(255,255,255,.21) 52%,
+                                rgba(255,238,194,.08) 56%,
+                                transparent 62%,
+                                transparent 100%
+                            );
+                        background-size: 240% 100%;
+                        animation: slHeroImageShine 5.4s ease-in-out infinite;
+                        mix-blend-mode: screen;
+                    }
+
+                    .sl-hero-vignette {
+                        box-shadow:
+                            inset 0 0 190px rgba(0, 0, 0, .25),
+                            inset 0 -145px 180px rgba(0, 0, 0, .39);
+                    }
+
+                    .sl-hero-ambient {
+                        animation: slHeroAmbient 5.8s ease-in-out infinite;
+                    }
+
+                    .sl-hero-sweep {
+                        opacity: 0;
+                        animation: slHeroSweep 6.4s cubic-bezier(.18, .74, .27, 1) infinite;
+                    }
+
+                    .sl-hero-copy {
+                        opacity: 0;
+                        filter: blur(12px);
+                        transform: translate3d(82px, 0, 0);
+                        animation: slHeroCopyIn 1.05s cubic-bezier(.16, 1, .3, 1) forwards;
+                        will-change: transform, opacity, filter;
+                    }
+
+                    [dir="ltr"] .sl-hero-copy {
+                        transform: translate3d(-82px, 0, 0);
+                    }
+
+                    .sl-hero-copy-1 { animation-delay: .04s; }
+                    .sl-hero-copy-2 { animation-delay: .12s; }
+                    .sl-hero-copy-3 { animation-delay: .23s; }
+                    .sl-hero-copy-4 { animation-delay: .34s; }
+                    .sl-hero-copy-5 { animation-delay: .45s; }
+                    .sl-hero-copy-6 { animation-delay: .56s; }
+
+                    .sl-hero-gold {
+                        color: #e0bd72;
+                        background-image: linear-gradient(
+                            105deg,
+                            #a77c3a 0%,
+                            #dbb96e 22%,
+                            #fff3c6 42%,
+                            #fffbe7 50%,
+                            #f2d995 58%,
+                            #d8b36a 74%,
+                            #a77c3a 100%
+                        );
+                        background-size: 250% 100%;
+                        background-position: 125% 0;
+                        -webkit-background-clip: text;
+                        background-clip: text;
+                        -webkit-text-fill-color: transparent;
+                        filter: drop-shadow(0 0 10px rgba(224, 190, 116, .20));
+                        animation:
+                            slHeroCopyIn 1.05s .23s cubic-bezier(.16, 1, .3, 1) forwards,
+                            slHeroGoldShimmer 3.9s 1.2s ease-in-out infinite,
+                            slHeroGoldGlow 2.8s 1.2s ease-in-out infinite;
+                    }
+
+                    .sl-hero-progress {
+                        transform-origin: right center;
+                        animation: slHeroProgress 6.4s linear forwards;
+                    }
+
+                    [dir="ltr"] .sl-hero-progress {
+                        transform-origin: left center;
+                    }
+
+                    .sl-hero-nav {
+                        -webkit-tap-highlight-color: transparent;
+                    }
+
+                    @keyframes slHeroImageDrift {
+                        0% {
+                            transform: scale(1.14) translate3d(1.5%, 0, 0);
                         }
 
-                        .sl-hero-copy {
+                        100% {
+                            transform: scale(1.025) translate3d(-1%, -0.8%, 0);
+                        }
+                    }
+
+                    @keyframes slHeroImageGlow {
+                        0%, 100% {
+                            opacity: .55;
+                            transform: scale(1) translate3d(0, 0, 0);
+                        }
+
+                        50% {
+                            opacity: 1;
+                            transform: scale(1.055) translate3d(-1.4%, 1.6%, 0);
+                        }
+                    }
+
+                    @keyframes slHeroImageShine {
+                        0%, 20% {
+                            background-position: 135% 0;
+                            opacity: .18;
+                        }
+
+                        44% {
+                            opacity: .95;
+                        }
+
+                        68%, 100% {
+                            background-position: -70% 0;
+                            opacity: .22;
+                        }
+                    }
+
+                    @keyframes slHeroAmbient {
+                        0%, 100% {
+                            opacity: .48;
+                            transform: translate3d(0, 0, 0) scale(.90);
+                        }
+
+                        50% {
+                            opacity: 1;
+                            transform: translate3d(-5%, 5%, 0) scale(1.12);
+                        }
+                    }
+
+                    @keyframes slHeroSweep {
+                        0%, 16% {
+                            transform: translate3d(-30%, 0, 0) rotate(10deg);
+                            opacity: 0;
+                        }
+
+                        28% {
+                            opacity: .7;
+                        }
+
+                        52% {
+                            opacity: 1;
+                        }
+
+                        74%, 100% {
+                            transform: translate3d(720%, 0, 0) rotate(10deg);
+                            opacity: 0;
+                        }
+                    }
+
+                    @keyframes slHeroCopyIn {
+                        0% {
+                            opacity: 0;
+                            transform: translate3d(82px, 0, 0);
+                            filter: blur(12px);
+                        }
+
+                        55% {
+                            opacity: 1;
+                        }
+
+                        100% {
+                            opacity: 1;
+                            transform: translate3d(0, 0, 0);
+                            filter: blur(0);
+                        }
+                    }
+
+                    @keyframes slHeroGoldShimmer {
+                        0%, 58%, 100% {
+                            background-position: 125% 0;
+                        }
+
+                        74% {
+                            background-position: -40% 0;
+                        }
+                    }
+
+                    @keyframes slHeroGoldGlow {
+                        0%, 100% {
+                            filter: drop-shadow(0 0 8px rgba(224, 190, 116, .16));
+                        }
+
+                        50% {
+                            filter:
+                                drop-shadow(0 0 14px rgba(255, 229, 166, .40))
+                                drop-shadow(0 0 28px rgba(190, 143, 63, .22));
+                        }
+                    }
+
+                    @keyframes slHeroProgress {
+                        from { transform: scaleX(0); }
+                        to { transform: scaleX(1); }
+                    }
+
+                    @media (prefers-reduced-motion: reduce) {
+                        .sl-hero-slide,
+                        .sl-hero-slide-active,
+                        .sl-hero-slide-active img,
+                        .sl-hero-image-glow,
+                        .sl-hero-image-shine,
+                        .sl-hero-ambient,
+                        .sl-hero-sweep,
+                        .sl-hero-copy,
+                        .sl-hero-gold,
+                        .sl-hero-progress {
+                            animation: none !important;
+                            transition: none !important;
+                        }
+
+                        .sl-hero-slide {
+                            transform: none !important;
+                            clip-path: none !important;
+                        }
+
+                        .sl-hero-copy,
+                        .sl-hero-gold {
                             opacity: 1 !important;
                             transform: none !important;
                             filter: none !important;
